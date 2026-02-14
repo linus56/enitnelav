@@ -121,8 +121,10 @@ button:active {
   </div>
 </div>
 
-<audio id="bgMusic" preload="auto" loop>
-  <source src="pachadaname.mp3" type="audio/mpeg">
+<!-- AUDIO -->
+
+<audio id="bgMusic" preload="auto" loop playsinline>
+  <source src="./pachadaname.mp3" type="audio/mpeg">
 </audio>
 
 <script>
@@ -131,15 +133,39 @@ const yesBtn = document.getElementById("yesBtn");
 const question = document.getElementById("question");
 const music = document.getElementById("bgMusic");
 
-/* ---------------- AUDIO UNLOCK FIX ---------------- */
+/* ---------------- BULLETPROOF AUDIO FIX ---------------- */
+
+music.volume = 1;
+music.muted = false;
+
+function playMusicSafe() {
+  music.currentTime = 0;
+
+  const playPromise = music.play();
+
+  if (playPromise !== undefined) {
+    playPromise
+      .then(() => console.log("✅ Audio playing"))
+      .catch(err => {
+        console.log("⚠️ Retry audio...", err);
+        setTimeout(() => {
+          music.play().catch(e =>
+            console.log("❌ Audio failed:", e)
+          );
+        }, 300);
+      });
+  }
+}
 
 function unlockAudio() {
   music.play()
     .then(() => {
       music.pause();
       music.currentTime = 0;
+      console.log("🔓 Audio unlocked");
     })
     .catch(() => {});
+
   document.removeEventListener("touchstart", unlockAudio);
   document.removeEventListener("click", unlockAudio);
 }
@@ -147,7 +173,7 @@ function unlockAudio() {
 document.addEventListener("touchstart", unlockAudio, { once: true });
 document.addEventListener("click", unlockAudio, { once: true });
 
-/* ---------------- NO BUTTON LOGIC ---------------- */
+/* ---------------- NO BUTTON ---------------- */
 
 const noMessages = [
   "Sorry you can't say no",
@@ -215,7 +241,7 @@ function showMessage() {
 
   const messageText = `Happy Valentine’s Day, bujji ❤️ Being with you is my happiest place — I love that I can be completely myself with you, and every time I see you, I still get that soft aww feeling 🥺💖...
 
-And yes… I’ve officially figured it out — you’re a lesbo 😜 I’m right here loving you and supporting you always 💕.
+And yes… I’m right here loving and supporting you always 💕.
 
 — Yours always, Pandi 💌`;
 
@@ -224,8 +250,7 @@ And yes… I’ve officially figured it out — you’re a lesbo 😜 I’m righ
   noBtn.style.display = "none";
   yesBtn.style.display = "none";
 
-  music.currentTime = 0;
-  music.play().catch(() => {});
+  playMusicSafe();
 
   createHearts();
   createCelebrationEmojis();
